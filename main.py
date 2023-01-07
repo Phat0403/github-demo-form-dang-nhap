@@ -246,26 +246,54 @@ class Game():
 		has_click_horse = False
 		
 		user_text = f"{min(30, self.coin // 2)}"
-		font = pygame.font.Font("./asset/img/SourceCodePro-Black.ttf", 32)
+		font = pygame.font.Font("./asset/img/SourceCodePro-Black.ttf", 24)
+		coin_text = font.render(f'COIN: {self.coin}', True, YELLOW)
+		coin_text_rect = coin_text.get_rect()
+		coin_text_rect.topright = (WINDOW_WIDTH - 20, 20)
 		
 		bet_text = font.render(f' BET: {user_text}', True, YELLOW)
 		
 		bet_text_rect = bet_text.get_rect()
-		bet_text_rect.left = .39 * WINDOW_WIDTH
+		bet_text_rect.left = .36 * WINDOW_WIDTH
 		bet_text_rect.centery = .22 * WINDOW_HEIGHT
 		
-		text_box = pygame.Rect(int(0.15 * self.WINDOW_WIDTH), int(0.7 * self.WINDOW_HEIGHT), WINDOW_WIDTH // 3,
-		                       self.WINDOW_HEIGHT // 10)
+		text_box = pygame.Rect(1, 1, WINDOW_WIDTH // 3.5,
+		                       WINDOW_HEIGHT // 12)
+		text_box.centerx = WINDOW_WIDTH // 2
+		text_box.centery = .22 * WINDOW_HEIGHT
+		
 		color = YELLOW
 		active = False
 		error = False
 		
 		while running:
 			clock.tick(60)
+			
+			#error bet
+			error = (len(user_text) >= 15) or (not user_text.isdigit()) or (int(user_text) <= 0) or (
+					int(user_text) > self.coin)
+			
+			if active:
+				if error:
+					color = RED
+				else:
+					color = GREEN
+			else:
+				color = YELLOW
+				
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
 					sys.exit()
+				
+				if event.type == pygame.KEYDOWN:
+					if active:
+						if event.key == pygame.K_BACKSPACE:
+							user_text = user_text[0: -1]
+						else:
+							if len(user_text) <= 16 and event.unicode.isdigit():
+								user_text += event.unicode
+								
 				
 				if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
 					pos = pygame.mouse.get_pos()
@@ -277,7 +305,13 @@ class Game():
 							for horse in horse_btn:
 								if horse != horse_btn[i]:
 									horse.click = False
-							
+									
+					# Check Click Box
+					if text_box.collidepoint(pos):
+						active = True
+					else:
+						active = False
+						
 					if button_go_back.rect.collidepoint(event.pos):
 						running = False
 					# right_map
@@ -322,6 +356,8 @@ class Game():
 			rect_x = 260
 			rect_y = 200
 			
+			
+			
 			self.screen.blit(pygame.transform.scale(pygame.image.load("./asset/img/cloud.png").convert(), (1200, 900)),
 			                 (BG_x, 0))
 			
@@ -357,6 +393,16 @@ class Game():
 			self.screen.blit(
 				pygame.font.Font(r'asset/img/SourceCodePro-Black.ttf', 50).render(f'SHOP', True, (246, 142, 2)),
 				(50, 450))
+			
+			#rerender
+			bet_text = font.render(f' BET: {user_text}', True, YELLOW)
+			coin_text = font.render(f'COIN: {self.coin}', True, YELLOW)
+			
+			# blit bet
+			self.screen.blit(bet_text, bet_text_rect)
+			self.screen.blit(coin_text, coin_text_rect)
+			pygame.draw.rect(self.screen, color, text_box, 3)
+			
 			pygame.display.update()
 
 
